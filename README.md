@@ -1,8 +1,10 @@
 # @attestto-com/vc-sdk
 
-Universal SDK for issuing and verifying W3C Verifiable Credentials.
+Universal SDK for issuing and verifying W3C Verifiable Credentials, developed by [Attestto Open](https://attestto.org).
 
 > **Any credential type. Any DID method. Any schema. Zero native dependencies.**
+>
+> This SDK implements the [W3C Verifiable Credentials Data Model v2.0](https://www.w3.org/TR/vc-data-model-2.0/). Domain-specific credential types (driving, banking, health, etc.) are defined in separate schema packages and are proposals open to institutional review.
 
 ## Install
 
