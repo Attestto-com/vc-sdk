@@ -120,14 +120,17 @@ const keys = generateKeyPair('Ed25519') // or 'ES256'
 
 ## Ecosystem
 
+Full index: [Attestto-com/attestto-open](https://github.com/Attestto-com/attestto-open)
+
 | Repo | What |
 |---|---|
 | [vc-sdk](https://github.com/Attestto-com/vc-sdk) | This — universal VC SDK |
+| [cr-vc-sdk](https://github.com/Attestto-com/cr-vc-sdk) | CR-specific SDK (TypeScript, typed wrappers) |
+| [cr-vc-sdk-dotnet](https://github.com/Attestto-com/cr-vc-sdk-dotnet) | CR-specific SDK (.NET 8) |
 | [cr-vc-schemas](https://github.com/Attestto-com/cr-vc-schemas) | CR driving schemas (11 types) |
-| [cr-vc-sdk](https://github.com/Attestto-com/cr-vc-sdk) | CR-specific SDK (typed wrappers) |
 | [did-sns-spec](https://github.com/Attestto-com/did-sns-spec) | did:sns DID method spec |
-| [wallet-identity-resolver](https://github.com/Attestto-com/wallet-identity-resolver) | On-chain identity resolution |
-| [credential-wallet-connector](https://github.com/Attestto-com/credential-wallet-connector) | Wallet discovery protocol |
+| [did-sns-resolver](https://github.com/Attestto-com/did-sns-resolver) | Universal Resolver driver for did:sns |
+| [id-wallet-adapter](https://github.com/Attestto-com/id-wallet-adapter) | Wallet discovery protocol |
 
 ## License
 
