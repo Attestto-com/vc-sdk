@@ -1,21 +1,45 @@
-# @attestto-com/vc-sdk
+# vc-sdk
 
-Universal SDK for issuing and verifying W3C Verifiable Credentials, developed by [Attestto Open](https://attestto.org).
+[![npm version](https://img.shields.io/npm/v/@attestto-com/vc-sdk.svg)](https://www.npmjs.com/package/@attestto-com/vc-sdk)
 
-> **Any credential type. Any DID method. Any schema. Zero native dependencies.**
->
-> This SDK implements the [W3C Verifiable Credentials Data Model v2.0](https://www.w3.org/TR/vc-data-model-2.0/). Domain-specific credential types (driving, banking, health, etc.) are defined in separate schema packages and are proposals open to institutional review.
+> Universal W3C VC Data Model v2.0 TypeScript SDK
 
-## Install
+`@attestto-com/vc-sdk` is a foundational SDK for issuing and verifying Verifiable Credentials with zero native dependencies. Implements the full [W3C VC Data Model v2.0](https://www.w3.org/TR/vc-data-model-2.0/) specification. Designed to be extended by domain-specific credential packages via a pluggable schema system. For full documentation, see [attestto.org/docs](https://attestto.org/docs).
 
-```bash
-npm install @attestto-com/vc-sdk
+## Architecture
+
+```mermaid
+graph LR
+    A["vc-sdk<br/>(core API)"]
+    B["cr-vc-sdk<br/>(CR types)"]
+    C["cr-vc-schemas<br/>(JSON-LD contexts)"]
+    D["attestto-app<br/>(citizen wallet)"]
+    E["attestto-verify<br/>(verification UI)"]
+    
+    A --> B
+    A --> E
+    B --> C
+    B --> D
+    A --> D
 ```
 
 ## Quick start
 
+### Prerequisites
+
+- Node ≥ 18
+- npm or yarn
+
+### Install
+
+```bash
+npm install @attestto/vc-sdk
+```
+
+### Try it
+
 ```typescript
-import { VCIssuer, VCVerifier, generateKeyPair } from '@attestto-com/vc-sdk'
+import { VCIssuer, VCVerifier, generateKeyPair } from '@attestto/vc-sdk'
 
 // Generate keys (Ed25519 or ES256)
 const keys = generateKeyPair()
@@ -49,62 +73,19 @@ const result = await verifier.verifyWithKey(vc, keys.publicKey, 'Ed25519', {
 console.log(result.valid) // true
 ```
 
-## Schema plugins (plug-and-play)
-
-Domain-specific schemas register as plugins — auto-add JSON-LD context and wrap claims:
-
-```typescript
-import { VCIssuer } from '@attestto-com/vc-sdk'
-
-const issuer = new VCIssuer({ did: 'did:web:cosevi.attestto.id', privateKey })
-
-// Register the CR driving schema plugin
-issuer.use({
-  context: 'https://schemas.attestto.org/cr/driving/v1',
-  types: ['DrivingLicense', 'TheoreticalTestResult', 'PracticalTestResult'],
-  propertyMap: {
-    DrivingLicense: 'license',
-    TheoreticalTestResult: 'theoreticalTest',
-    PracticalTestResult: 'practicalTest',
-  },
-})
-
-// Now issue — context and property wrapping are automatic
-const vc = await issuer.issue({
-  type: 'DrivingLicense',
-  subjectDid: 'did:web:maria.attestto.id',
-  claims: {
-    licenseNumber: 'CR-2026-045678',
-    categories: ['B'],
-    status: 'active',
-  },
-})
-// vc['@context'] includes cr/driving/v1 automatically
-// vc.credentialSubject.license wraps the claims automatically
-```
-
-## Available schema packages
-
-| Package | Domain | Repo |
-|---|---|---|
-| **cr-vc-schemas** | Costa Rica driving ecosystem (mDL, tests, medical, vehicles) | [Attestto-com/cr-vc-schemas](https://github.com/Attestto-com/cr-vc-schemas) |
-| cr-banking-schemas | Banking KYC, accounts, transfers | Planned |
-| cr-health-schemas | Medical, CCSS, professional licenses | Planned |
-| cr-education-schemas | Degrees, certifications, MEP | Planned |
-| cr-legal-schemas | Firma digital BCCR, notarial, powers of attorney | Planned |
-| cr-property-schemas | Registro Nacional, real estate | Planned |
-
 ## API
 
-### `VCIssuer`
+### VCIssuer
 
 ```typescript
 const issuer = new VCIssuer(config: IssuerConfig)
-issuer.use(plugin: SchemaPlugin)       // Register domain schemas
-const vc = await issuer.issue(options)  // Issue a signed VC
+issuer.use(plugin: SchemaPlugin)          // Register domain schemas
+const vc = await issuer.issue(options)     // Issue a signed VC
 ```
 
-### `VCVerifier`
+Core responsibilities: sign VCs with Ed25519 or ES256, manage DID/keyId, auto-inject schema context and property mapping via plugins.
+
+### VCVerifier
 
 ```typescript
 const verifier = new VCVerifier(config?: VerifierConfig)
@@ -112,10 +93,47 @@ const result = await verifier.verify(vc, options?)
 const result = await verifier.verifyWithKey(vc, publicKey, algorithm, options?)
 ```
 
-### `generateKeyPair`
+Validates signatures, expiration, proof format, and custom constraints. Returns `{ valid, checks, errors, warnings }`.
+
+### generateKeyPair
 
 ```typescript
-const keys = generateKeyPair('Ed25519') // or 'ES256'
+const keys = generateKeyPair('Ed25519' | 'ES256')
+// keys.publicKey: Uint8Array
+// keys.privateKey: Uint8Array
+// keys.algorithm: string
+```
+
+Generate cryptographic key pairs for issuance and verification.
+
+### SchemaPlugin
+
+```typescript
+interface SchemaPlugin {
+  context: string                    // JSON-LD context URL
+  types: string[]                    // Credential types this plugin handles
+  propertyMap?: Record<string, string>  // Map type → credentialSubject property
+}
+```
+
+Register domain-specific schemas to auto-inject context and wrap claims:
+
+```typescript
+issuer.use({
+  context: 'https://schemas.attestto.org/cr/driving/v1',
+  types: ['DrivingLicense', 'TheoreticalTestResult'],
+  propertyMap: {
+    DrivingLicense: 'license',
+    TheoreticalTestResult: 'theoreticalTest',
+  },
+})
+
+// Now issue — context and property wrapping are automatic
+const vc = await issuer.issue({
+  type: 'DrivingLicense',
+  subjectDid: 'did:web:maria.attestto.id',
+  claims: { licenseNumber: 'CR-2026-045678', categories: ['B'] },
+})
 ```
 
 ## Ecosystem
