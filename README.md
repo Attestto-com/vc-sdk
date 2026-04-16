@@ -1,10 +1,10 @@
 # vc-sdk
 
-[![npm version](https://img.shields.io/npm/v/@attestto-com/vc-sdk.svg)](https://www.npmjs.com/package/@attestto-com/vc-sdk)
+[![npm version](https://img.shields.io/npm/v/@attestto/vc-sdk.svg)](https://www.npmjs.com/package/@attestto/vc-sdk)
 
 > Universal W3C VC Data Model v2.0 TypeScript SDK
 
-`@attestto-com/vc-sdk` is a foundational SDK for issuing and verifying Verifiable Credentials with zero native dependencies. Implements the full [W3C VC Data Model v2.0](https://www.w3.org/TR/vc-data-model-2.0/) specification. Designed to be extended by domain-specific credential packages via a pluggable schema system. For full documentation, see [attestto.org/docs](https://attestto.org/docs).
+`@attestto/vc-sdk` is a foundational SDK for issuing and verifying Verifiable Credentials with zero native dependencies. Implements the full [W3C VC Data Model v2.0](https://www.w3.org/TR/vc-data-model-2.0/) specification. Designed to be extended by domain-specific credential packages via a pluggable schema system. For full documentation, see [attestto.org/docs](https://attestto.org/docs).
 
 ## Architecture
 

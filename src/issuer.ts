@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```ts
- * import { VCIssuer, generateKeyPair } from '@attestto-com/vc-sdk'
+ * import { VCIssuer, generateKeyPair } from '@attestto/vc-sdk'
  *
  * const keys = generateKeyPair()
  * const issuer = new VCIssuer({

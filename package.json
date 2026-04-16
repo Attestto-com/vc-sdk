@@ -1,5 +1,5 @@
 {
-  "name": "@attestto-com/vc-sdk",
+  "name": "@attestto/vc-sdk",
   "version": "0.1.0",
   "description": "Universal SDK for issuing and verifying W3C Verifiable Credentials — any schema, any DID method",
   "type": "module",

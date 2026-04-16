@@ -1,0 +1,161 @@
+# @attestto/vc-sdk
+
+> Universal SDK for issuing and verifying W3C Verifiable Credentials. Any credential type. Any DID method. Any schema. Zero native dependencies.
+
+Part of the [Attestto Open](https://attestto.org) ecosystem. This is the foundational credential layer that domain-specific SDKs (like `cr-vc-sdk`) build on top of.
+
+## Install
+
+```bash
+npm install @attestto/vc-sdk
+```
+
+Node ≥ 18. ESM + CJS dual build.
+
+## What it does
+
+Implements the [W3C VC Data Model v2.0](https://www.w3.org/TR/vc-data-model-2.0/). Core responsibilities:
+
+- **Issue** signed VCs with Ed25519 or ES256 — any type, any claims shape
+- **Verify** VCs against a known public key, or via a custom DID resolver
+- **Plugin system** — domain schema packages register themselves and auto-inject JSON-LD context + property mapping
+- **Key generation** — `generateKeyPair('Ed25519' | 'ES256')`
+
+No native dependencies. `@noble/curves` + `@noble/hashes` + `jose` only.
+
+## Core API
+
+### `VCIssuer`
+
+```typescript
+import { VCIssuer, generateKeyPair } from '@attestto/vc-sdk'
+
+const keys = generateKeyPair()                // Ed25519 by default
+
+const issuer = new VCIssuer({
+  did: 'did:web:my-org.attestto.id',          // any DID method works
+  privateKey: keys.privateKey,
+  algorithm: 'Ed25519',                       // or 'ES256'
+  keyId: '#key-1',                            // optional, defaults to '#key-1'
+})
+
+const vc = await issuer.issue({
+  type: 'UniversityDegree',                   // any string — no type constraints
+  context: 'https://schemas.example.org/v1',  // optional extra JSON-LD context
+  subjectDid: 'did:web:student.attestto.id',
+  claims: { degree: 'Computer Science' },
+  expirationDate: '2030-01-01T00:00:00Z',     // optional
+})
+```
+
+### `VCVerifier`
+
+```typescript
+import { VCVerifier } from '@attestto/vc-sdk'
+
+const verifier = new VCVerifier()
+
+// Verify against a known public key
+const result = await verifier.verifyWithKey(vc, keys.publicKey, 'Ed25519', {
+  expectedType: 'UniversityDegree',
+  expectedIssuer: 'did:web:my-org.attestto.id',
+  checkExpiration: true,
+})
+// result.valid — boolean
+// result.checks — array of { check, passed, message }
+// result.errors — string[]
+// result.warnings — string[]
+
+// Verify via DID resolver (async key lookup)
+const verifierWithResolver = new VCVerifier({
+  resolvePublicKey: async (did, keyId) => {
+    // fetch DID document, return { publicKey, algorithm }
+  },
+})
+const result = await verifierWithResolver.verify(vc, { expectedType: 'UniversityDegree' })
+```
+
+### Schema plugins
+
+Domain schema packages plug into `VCIssuer` to auto-inject JSON-LD context and wrap claims under the correct property name:
+
+```typescript
+issuer.use({
+  context: 'https://schemas.attestto.org/cr/driving/v1',
+  types: ['DrivingLicense', 'TheoreticalTestResult'],
+  propertyMap: {
+    DrivingLicense: 'license',          // claims → credentialSubject.license
+    TheoreticalTestResult: 'theoreticalTest',
+  },
+})
+
+// Now issue — context and property wrapping are automatic
+const vc = await issuer.issue({
+  type: 'DrivingLicense',
+  subjectDid: 'did:web:maria.attestto.id',
+  claims: { licenseNumber: 'CR-2026-045678', categories: ['B'] },
+})
+```
+
+## Key types
+
+```typescript
+interface IssuerConfig {
+  did: string
+  privateKey: Uint8Array | string
+  algorithm?: 'Ed25519' | 'ES256'   // default: Ed25519
+  keyId?: string                     // default: '#key-1'
+}
+
+interface IssueOptions {
+  type: string | string[]
+  context?: string | string[]
+  subjectDid: string
+  claims: Record<string, unknown>
+  expirationDate?: string            // ISO 8601
+  credentialStatus?: CredentialStatus
+  id?: string                        // auto-generated UUID if omitted
+}
+
+interface VerificationResult {
+  valid: boolean
+  checks: VerificationCheck[]
+  errors: string[]
+  warnings: string[]
+}
+
+interface SchemaPlugin {
+  context: string
+  types: string[]
+  propertyMap?: Record<string, string>
+}
+```
+
+## Source layout
+
+```
+src/
+  index.ts     — public exports
+  issuer.ts    — VCIssuer class
+  verifier.ts  — VCVerifier class
+  keys.ts      — key generation, sign, verify helpers
+  types.ts     — all TypeScript interfaces
+tests/
+  issuer.test.ts
+  verifier.test.ts
+  keys.test.ts
+```
+
+## Related packages in this ecosystem
+
+| Package | Purpose |
+|---|---|
+| `@attestto/cr-vc-sdk` | CR-specific typed wrappers built on this SDK |
+| `cr-vc-schemas` | JSON-LD schemas + `SchemaPlugin` objects for CR credentials |
+| `@attestto/id-wallet-adapter` | Request and verify VPs from browser credential wallets |
+| `identity-resolver` | Resolve DIDs and identity from Solana wallet addresses |
+| `did-sns-spec` | `did:sns` DID method — human-readable `.sol` domain DIDs |
+
+## License
+
+Apache 2.0 — [Attestto Open](https://attestto.org)

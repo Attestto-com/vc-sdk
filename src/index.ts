@@ -1,5 +1,5 @@
 /**
- * @attestto-com/vc-sdk
+ * @attestto/vc-sdk
  *
  * Universal SDK for issuing and verifying W3C Verifiable Credentials.
  * Works with any schema — plug in domain-specific types via SchemaPlugin.
