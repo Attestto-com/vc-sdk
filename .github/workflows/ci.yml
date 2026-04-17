@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Stub guard
+        run: |
+          if grep -rn \
+            -e 'TODO\|FIXME\|HACK\|XXX' \
+            -e 'did:example:\|did:test:\|did:fake:' \
+            -e 'alert(' \
+            -e 'coming.soon\|Coming Soon\|COMING SOON' \
+            --include='*.ts' --include='*.js' \
+            --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=tests \
+            src/; then
+            echo "::error::Stub or placeholder found in src/"
+            exit 1
+          fi
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
