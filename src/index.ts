@@ -111,3 +111,22 @@ export type {
   DirectPostBody,
   PresentationSubmission,
 } from './oid4vp-present.js'
+
+// ── SD-JWT Selective Disclosure ──────────────────────────────────────────────
+
+export {
+  createSdJwt,
+  createNestedSdJwt,
+  selectDisclosures,
+  verifyDisclosures,
+  hashDisclosure,
+  encodeSdJwt,
+  decodeSdJwt,
+  SdJwtError,
+} from './sd-jwt.js'
+export type {
+  Disclosure,
+  SdJwtVc,
+  SdJwtPresentation,
+  DisclosureVerification,
+} from './sd-jwt.js'
