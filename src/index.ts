@@ -26,7 +26,9 @@ export type {
   SchemaPlugin,
 } from './types.js'
 
-// OpenID4VCI — Credential Offer
+// ── OpenID4VCI ───────────────────────────────────────────────────────────────
+
+// Credential Offer
 export {
   parseCredentialOffer,
   hasPreAuthorizedCode,
@@ -44,7 +46,36 @@ export type {
   ParsedCredentialOffer,
 } from './oid4vci.js'
 
-// OpenID4VP — Authorization Request
+// Token Endpoint
+export {
+  getIssuerMetadataUrl,
+  parseIssuerMetadata,
+  getTokenEndpoint,
+  buildPreAuthorizedTokenRequest,
+  buildAuthorizationCodeTokenRequest,
+  encodeTokenRequest,
+  parseTokenResponse,
+  buildProofJwt,
+  buildCredentialRequest,
+  parseCredentialResponse,
+  TokenError,
+} from './oid4vci-token.js'
+export type {
+  IssuerMetadata,
+  CredentialConfiguration,
+  PreAuthorizedTokenRequest,
+  AuthorizationCodeTokenRequest,
+  TokenRequest,
+  TokenResponse,
+  TokenErrorResponse,
+  CredentialRequest,
+  CredentialResponse,
+  ProofOptions,
+} from './oid4vci-token.js'
+
+// ── OpenID4VP ────────────────────────────────────────────────────────────────
+
+// Authorization Request
 export {
   parseAuthorizationRequest,
   isDirectPost,
@@ -63,3 +94,20 @@ export type {
   DcqlTrustedAuthority,
   ResponseMode,
 } from './oid4vp.js'
+
+// Presentation Builder + Submission
+export {
+  matchCredentials,
+  buildPresentation,
+  buildDirectPostBody,
+  encodeDirectPostBody,
+  preparePresentation,
+  PresentationError,
+} from './oid4vp-present.js'
+export type {
+  VerifiablePresentation,
+  DcqlMatchResult,
+  PresentationOptions,
+  DirectPostBody,
+  PresentationSubmission,
+} from './oid4vp-present.js'
