@@ -25,3 +25,41 @@ export type {
   VerifyOptions,
   SchemaPlugin,
 } from './types.js'
+
+// OpenID4VCI — Credential Offer
+export {
+  parseCredentialOffer,
+  hasPreAuthorizedCode,
+  hasAuthorizationCode,
+  requiresTxCode,
+  CredentialOfferError,
+  PRE_AUTHORIZED_CODE_GRANT,
+} from './oid4vci.js'
+export type {
+  CredentialOfferPayload,
+  CredentialOfferGrants,
+  GrantAuthorizationCode,
+  GrantPreAuthorizedCode,
+  TxCode,
+  ParsedCredentialOffer,
+} from './oid4vci.js'
+
+// OpenID4VP — Authorization Request
+export {
+  parseAuthorizationRequest,
+  isDirectPost,
+  needsJarFetch,
+  getRequestedCredentials,
+  getRequestedClaims,
+  AuthorizationRequestError,
+} from './oid4vp.js'
+export type {
+  AuthorizationRequest,
+  ParsedAuthorizationRequest,
+  DcqlQuery,
+  DcqlCredentialQuery,
+  DcqlClaimQuery,
+  DcqlCredentialSetQuery,
+  DcqlTrustedAuthority,
+  ResponseMode,
+} from './oid4vp.js'
