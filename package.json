@@ -1,6 +1,6 @@
 {
   "name": "@attestto/vc-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Universal SDK for issuing and verifying W3C Verifiable Credentials — any schema, any DID method",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -8,9 +8,9 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
