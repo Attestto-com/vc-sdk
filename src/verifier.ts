@@ -59,7 +59,7 @@ export class VCVerifier {
     this.checkIssuanceDate(credential, checks, errors)
 
     if (credential.proof && this.resolvePublicKey) {
-      await this.checkProof(credential, checks, errors)
+      await this.checkProofs(credential, checks, errors)
     } else if (credential.proof && !this.resolvePublicKey) {
       warnings.push('Proof present but no public key resolver — signature not verified')
     } else if (!credential.proof) {
@@ -137,28 +137,39 @@ export class VCVerifier {
     if (!valid) errors.push(`Issuance date in future: ${vc.issuanceDate}`)
   }
 
-  private async checkProof(vc: VerifiableCredential, checks: VerificationCheck[], errors: string[]): Promise<void> {
+  /**
+   * Verify all proofs on a credential (supports single proof or proof array).
+   * For multi-party credentials, ALL proofs must be valid.
+   */
+  private async checkProofs(vc: VerifiableCredential, checks: VerificationCheck[], errors: string[]): Promise<void> {
     if (!vc.proof || !this.resolvePublicKey) return
 
-    const vm = vc.proof.verificationMethod
-    const hashIdx = vm.lastIndexOf('#')
-    const did = hashIdx > 0 ? vm.substring(0, hashIdx) : vm
-    const keyId = hashIdx > 0 ? vm.substring(hashIdx) : '#key-1'
-
-    const resolved = await this.resolvePublicKey(did, keyId)
-    if (!resolved) {
-      checks.push({ check: 'proof.keyResolution', passed: false })
-      errors.push(`Could not resolve key for ${vm}`)
-      return
-    }
-    checks.push({ check: 'proof.keyResolution', passed: true })
-
+    const proofs = Array.isArray(vc.proof) ? vc.proof : [vc.proof]
     const { proof: _, ...unsigned } = vc
     const message = new TextEncoder().encode(JSON.stringify(unsigned))
-    const signature = fromBase64url(vc.proof.proofValue ?? '')
-    const valid = verifySignature(message, signature, resolved.publicKey, resolved.algorithm)
 
-    checks.push({ check: 'proof.signature', passed: valid })
-    if (!valid) errors.push('Invalid signature')
+    for (let i = 0; i < proofs.length; i++) {
+      const proof = proofs[i]
+      const label = proofs.length > 1 ? `proof[${i}]` : 'proof'
+
+      const vm = proof.verificationMethod
+      const hashIdx = vm.lastIndexOf('#')
+      const did = hashIdx > 0 ? vm.substring(0, hashIdx) : vm
+      const keyId = hashIdx > 0 ? vm.substring(hashIdx) : '#key-1'
+
+      const resolved = await this.resolvePublicKey(did, keyId)
+      if (!resolved) {
+        checks.push({ check: `${label}.keyResolution`, passed: false })
+        errors.push(`Could not resolve key for ${vm}`)
+        continue
+      }
+      checks.push({ check: `${label}.keyResolution`, passed: true })
+
+      const signature = fromBase64url(proof.proofValue ?? '')
+      const valid = verifySignature(message, signature, resolved.publicKey, resolved.algorithm)
+
+      checks.push({ check: `${label}.signature`, passed: valid })
+      if (!valid) errors.push(`Invalid signature on ${label}`)
+    }
   }
 }

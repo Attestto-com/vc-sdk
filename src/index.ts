@@ -14,6 +14,35 @@ export { VCVerifier } from './verifier.js'
 export type { PublicKeyResolver, VerifierConfig } from './verifier.js'
 export { generateKeyPair, sign, verify, toBase64url, fromBase64url, toHex } from './keys.js'
 export type { KeyPair } from './keys.js'
+
+// ── E2E Encryption (Chat) ──────────────────────────────────────────────────
+export {
+  edToX25519Public,
+  edToX25519Private,
+  generateX25519KeyPair,
+  x25519SharedSecret,
+  deriveChannelKey,
+  buildNonce,
+  encrypt,
+  decrypt,
+} from './crypto.js'
+export type { X25519KeyPair } from './crypto.js'
+
+// ── Chat Credential Schemas ────────────────────────────────────────────────
+export {
+  agreementSchema,
+  presenceSchema,
+  chatSchemas,
+} from './chat-schemas.js'
+export type {
+  AgreementParty,
+  AgreementTerm,
+  ConversationRef,
+  ReferencedAttachment,
+  PresenceProof,
+  AgreementSubject,
+  PresenceSubject,
+} from './chat-schemas.js'
 export type {
   VerifiableCredential,
   CredentialStatus,

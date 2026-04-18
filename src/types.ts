@@ -17,7 +17,7 @@ export interface VerifiableCredential<T extends Record<string, unknown> = Record
     id: string
   } & T
   credentialStatus?: CredentialStatus
-  proof?: Proof
+  proof?: Proof | Proof[]
 }
 
 /** W3C StatusList2021 entry */

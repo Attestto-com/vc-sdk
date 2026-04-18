@@ -251,7 +251,7 @@ describe('Generic VC SDK', () => {
       const result = await verifier.verifyWithKey(vc, keys.publicKey, 'Ed25519')
 
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('Invalid signature')
+      expect(result.errors).toContain('Invalid signature on proof')
     })
   })
 

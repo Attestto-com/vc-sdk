@@ -49,6 +49,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@noble/ciphers": "^2.2.0",
     "@noble/curves": "^1.8.0",
     "@noble/hashes": "^1.7.0",
     "jose": "^6.0.0"

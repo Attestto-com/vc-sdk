@@ -187,6 +187,51 @@ export class VCIssuer {
     }
   }
 
+  /**
+   * Add a proof to an existing credential (multi-party signing).
+   *
+   * The credential may already have one or more proofs. This method
+   * appends a new proof signed by this issuer's key, converting the
+   * proof field to an array if needed.
+   *
+   * ```ts
+   * // Party A issues
+   * const vc = await issuerA.issue({ ... })
+   * // Party B co-signs
+   * const coSigned = VCIssuer.addProof(vc, issuerB)
+   * // vc.proof is now [proofA, proofB]
+   * ```
+   */
+  static addProof(
+    credential: VerifiableCredential,
+    issuer: VCIssuer
+  ): VerifiableCredential {
+    const existing = credential.proof
+    const { proof: _, ...unsigned } = credential
+    const message = new TextEncoder().encode(JSON.stringify(unsigned))
+
+    const privateKey = issuer.config.privateKey instanceof Uint8Array
+      ? issuer.config.privateKey
+      : new TextEncoder().encode(issuer.config.privateKey)
+
+    const signature = sign(message, privateKey, issuer.config.algorithm)
+
+    const newProof: Proof = {
+      type: issuer.config.algorithm === 'Ed25519' ? 'Ed25519Signature2020' : 'EcdsaSecp256r1Signature2019',
+      created: new Date().toISOString(),
+      verificationMethod: `${issuer.config.did}${issuer.config.keyId}`,
+      proofPurpose: 'assertionMethod',
+      proofValue: toBase64url(signature),
+    }
+
+    // Convert to array
+    const proofs: Proof[] = existing
+      ? (Array.isArray(existing) ? [...existing, newProof] : [existing, newProof])
+      : [newProof]
+
+    return { ...credential, proof: proofs }
+  }
+
   get did(): string {
     return this.config.did
   }
