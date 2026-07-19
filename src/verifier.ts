@@ -14,13 +14,24 @@ export type PublicKeyResolver = (did: string, keyId: string) => Promise<{
 
 export interface VerifierConfig {
   resolvePublicKey?: PublicKeyResolver
+  /**
+   * Optional issuer-binding check for delegated signing. Given the credential
+   * issuer and a proof's `verificationMethod`, resolve the issuer's DID document
+   * and return true iff that key is an authorized `assertionMethod` of the
+   * issuer. When omitted, the verifier requires the verificationMethod's DID to
+   * equal the credential issuer (direct binding). A throwing hook is treated as
+   * "not authorized" (fail-closed).
+   */
+  verifyIssuerBinding?: (issuer: string, verificationMethod: string) => Promise<boolean>
 }
 
 export class VCVerifier {
   private resolvePublicKey?: PublicKeyResolver
+  private verifyIssuerBinding?: (issuer: string, verificationMethod: string) => Promise<boolean>
 
   constructor(config?: VerifierConfig) {
     this.resolvePublicKey = config?.resolvePublicKey
+    this.verifyIssuerBinding = config?.verifyIssuerBinding
   }
 
   async verify(
@@ -58,19 +69,30 @@ export class VCVerifier {
 
     this.checkIssuanceDate(credential, checks, errors)
 
-    if (credential.proof && this.resolvePublicKey) {
-      await this.checkProofs(credential, checks, errors)
-    } else if (credential.proof && !this.resolvePublicKey) {
-      warnings.push('Proof present but no public key resolver — signature not verified')
-    } else if (!credential.proof) {
-      warnings.push('No proof — credential is unsigned')
+    // Cryptographic verification. Fail-closed by default (SOC-35): an unsigned
+    // credential, or one that cannot be verified, is an ERROR — not a warning —
+    // so `valid` never conflates structural validity with signature validity.
+    const requireSignature = options.requireSignature !== false
+    let signatureVerified = false
+    if (credential.proof) {
+      if (this.resolvePublicKey) {
+        signatureVerified = await this.checkProofs(credential, checks, errors)
+      } else {
+        const msg = 'Proof present but no public key resolver — signature not verified'
+        if (requireSignature) errors.push(msg)
+        else warnings.push(msg)
+      }
+    } else {
+      const msg = 'No proof — credential is unsigned'
+      if (requireSignature) errors.push(msg)
+      else warnings.push(msg)
     }
 
     if (options.checkStatus && credential.credentialStatus) {
       warnings.push('Status check requested but StatusList2021 not yet implemented')
     }
 
-    return { valid: errors.length === 0, checks, errors, warnings }
+    return { valid: errors.length === 0, signatureVerified, checks, errors, warnings }
   }
 
   async verifyWithKey(
@@ -139,14 +161,25 @@ export class VCVerifier {
 
   /**
    * Verify all proofs on a credential (supports single proof or proof array).
-   * For multi-party credentials, ALL proofs must be valid.
+   *
+   * Returns true only if EVERY proof is a cryptographically valid signature AND
+   * at least one valid proof is bound to the credential issuer (SOC-32) — i.e.
+   * signed by the issuer's own DID, or a key the `verifyIssuerBinding` hook
+   * authorizes for the issuer. This blocks the forgery where an attacker claims
+   * a trusted `issuer` but signs with their own unrelated key. Additional proofs
+   * from other DIDs (multi-party co-signers) are allowed but must also verify.
    */
-  private async checkProofs(vc: VerifiableCredential, checks: VerificationCheck[], errors: string[]): Promise<void> {
-    if (!vc.proof || !this.resolvePublicKey) return
+  private async checkProofs(vc: VerifiableCredential, checks: VerificationCheck[], errors: string[]): Promise<boolean> {
+    if (!vc.proof || !this.resolvePublicKey) return false
 
     const proofs = Array.isArray(vc.proof) ? vc.proof : [vc.proof]
     const { proof: _, ...unsigned } = vc
     const message = new TextEncoder().encode(JSON.stringify(unsigned))
+    const issuerId =
+      typeof vc.issuer === 'string' ? vc.issuer : (vc.issuer as { id?: string } | undefined)?.id
+
+    let allValid = proofs.length > 0
+    let issuerBoundValid = false
 
     for (let i = 0; i < proofs.length; i++) {
       const proof = proofs[i]
@@ -157,19 +190,40 @@ export class VCVerifier {
       const did = hashIdx > 0 ? vm.substring(0, hashIdx) : vm
       const keyId = hashIdx > 0 ? vm.substring(hashIdx) : '#key-1'
 
-      const resolved = await this.resolvePublicKey(did, keyId)
+      // Issuer binding (SOC-32): is this proof's key the issuer's own, or one
+      // the issuer explicitly authorizes?
+      const isIssuerKey = this.verifyIssuerBinding
+        ? await this.verifyIssuerBinding(issuerId ?? '', vm).catch(() => false)
+        : did === issuerId
+      checks.push({ check: `${label}.issuerBinding`, passed: isIssuerKey })
+
+      const resolved = await this.resolvePublicKey!(did, keyId)
       if (!resolved) {
         checks.push({ check: `${label}.keyResolution`, passed: false })
         errors.push(`Could not resolve key for ${vm}`)
+        allValid = false
         continue
       }
       checks.push({ check: `${label}.keyResolution`, passed: true })
 
       const signature = fromBase64url(proof.proofValue ?? '')
-      const valid = verifySignature(message, signature, resolved.publicKey, resolved.algorithm)
+      const sigValid = verifySignature(message, signature, resolved.publicKey, resolved.algorithm)
+      checks.push({ check: `${label}.signature`, passed: sigValid })
+      if (!sigValid) {
+        errors.push(`Invalid signature on ${label}`)
+        allValid = false
+      }
 
-      checks.push({ check: `${label}.signature`, passed: valid })
-      if (!valid) errors.push(`Invalid signature on ${label}`)
+      if (isIssuerKey && sigValid) issuerBoundValid = true
     }
+
+    checks.push({ check: 'proof.issuerBound', passed: issuerBoundValid })
+    if (!issuerBoundValid) {
+      errors.push(
+        `Signature not bound to the credential issuer${issuerId ? ` "${issuerId}"` : ''} — no valid proof from the issuer's key`
+      )
+    }
+
+    return allValid && issuerBoundValid
   }
 }
