@@ -71,7 +71,19 @@ export interface IssueOptions {
 
 /** Verification result */
 export interface VerificationResult {
+  /**
+   * Overall validity. By default this requires a cryptographically valid proof
+   * bound to the credential issuer — an unsigned or unverifiable credential is
+   * NOT valid (fail-closed). Set `VerifyOptions.requireSignature = false` to
+   * evaluate structural validity only.
+   */
   valid: boolean
+  /**
+   * Whether a cryptographically valid proof, bound to the credential issuer,
+   * was verified. Independent of `valid` so callers can distinguish structural
+   * validity from signature validity even when `requireSignature` is false.
+   */
+  signatureVerified: boolean
   checks: VerificationCheck[]
   errors: string[]
   warnings: string[]
@@ -96,6 +108,13 @@ export interface VerifyOptions {
   expectedIssuer?: string
   /** Required JSON-LD context */
   expectedContext?: string
+  /**
+   * Require a cryptographically valid, issuer-bound proof for `valid: true`
+   * (default: true / fail-closed). Set to `false` to allow structural-only
+   * validation of unsigned or unverifiable credentials (e.g. inspecting a draft
+   * before it is signed); `signatureVerified` still reports the real state.
+   */
+  requireSignature?: boolean
 }
 
 /**
