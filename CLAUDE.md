@@ -30,7 +30,16 @@
 
 ## Rules
 
-- This is a public `@attestto/*` package -- changes must not break downstream consumers (cr-vc-sdk depends on this)
+- This is a public `@attestto/*` package -- changes must not break downstream consumers
+- 🔴 **`cr-vc-sdk` does NOT depend on this package.** Corrected 2026-08-06: it carries a
+  standalone copy of the verifier and lists no `@attestto/*` dependency at all. A security fix
+  here does **not** reach it. SOC-16 and SOC-19 were closed on the assumption that it would, and
+  both were still live weeks later. Do not assume the dependency edge exists -- check
+  `cr-vc-sdk/package.json` before claiming a fix propagates.
+- **Publishing is the fix, not merging.** For a library, npm is the live path. A security fix
+  merged to `main` and not published protects nobody; `@attestto/vc-sdk@0.2.0` served fail-open
+  verification for the entire window between the merge and the publish. Verify with a fresh
+  `npm install` in an empty directory, not from `dist/`.
 - Ship tests with every change
 - Zero native dependencies -- keep it that way
 - W3C VC Data Model v2.0 compliance is mandatory
