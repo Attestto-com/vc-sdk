@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      - name: Changelog gate
+        run: node scripts/ci-changelog.mjs
+
       - run: pnpm install --frozen-lockfile
 
       # Runs before the gates it vouches for: it seeds a violation of each one
