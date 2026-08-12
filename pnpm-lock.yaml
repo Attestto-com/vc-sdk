@@ -5,10 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  vite: '>=8.0.16'
-  esbuild: '>=0.28.1'
-  postcss: '>=8.5.23'
-  brace-expansion@>=2: '>=5.0.7'
+  vite: '>=8.0.16 <9'
+  esbuild: '>=0.28.1 <0.29'
+  postcss: '>=8.5.23 <9'
+  brace-expansion@>=2: '>=5.0.7 <6'
 
 importers:
 
@@ -663,7 +663,7 @@ packages:
     resolution: {integrity: sha512-Trr0hYO9CM3Wj6ksWHRhK9IZpIY6wTMO5u/MqXurMxT57sWBaOPEtP3Oq60ihZuh5JsiagKfz95OcxdEP6dBrA==}
     peerDependencies:
       msw: ^2.4.9
-      vite: '>=8.0.16'
+      vite: '>=8.0.16 <9'
     peerDependenciesMeta:
       msw:
         optional: true
@@ -745,7 +745,7 @@ packages:
     resolution: {integrity: sha512-3WrrOuZiyaaZPWiEt4G3+IffISVC9HYlWueJEBWED4ZH4aIAC2PnkdnuRrR94M+w6yGWn4AglWtJtBI8YqvgoA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     peerDependencies:
-      esbuild: '>=0.28.1'
+      esbuild: '>=0.28.1 <0.29'
 
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
@@ -1243,7 +1243,7 @@ packages:
     engines: {node: '>= 18'}
     peerDependencies:
       jiti: '>=1.21.0'
-      postcss: '>=8.5.23'
+      postcss: '>=8.5.23 <9'
       tsx: ^4.8.1
       yaml: ^2.4.2
     peerDependenciesMeta:
@@ -1413,7 +1413,7 @@ packages:
     peerDependencies:
       '@microsoft/api-extractor': ^7.36.0
       '@swc/core': ^1
-      postcss: '>=8.5.23'
+      postcss: '>=8.5.23 <9'
       typescript: '>=4.5.0'
     peerDependenciesMeta:
       '@microsoft/api-extractor':
@@ -1459,7 +1459,7 @@ packages:
     peerDependencies:
       '@types/node': ^20.19.0 || >=22.12.0
       '@vitejs/devtools': ^0.4.0
-      esbuild: '>=0.28.1'
+      esbuild: '>=0.28.1 <0.29'
       jiti: '>=1.21.0'
       less: ^4.0.0
       sass: ^1.70.0

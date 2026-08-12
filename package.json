@@ -68,10 +68,10 @@
   },
   "pnpm": {
     "overrides": {
-      "vite": ">=8.0.16",
-      "esbuild": ">=0.28.1",
-      "postcss": ">=8.5.23",
-      "brace-expansion@>=2": ">=5.0.7"
+      "vite": ">=8.0.16 <9",
+      "esbuild": ">=0.28.1 <0.29",
+      "postcss": ">=8.5.23 <9",
+      "brace-expansion@>=2": ">=5.0.7 <6"
     }
   },
   "gateSelfTest": {
