@@ -41,14 +41,28 @@ export class VCIssuer {
   private plugins: SchemaPlugin[] = []
 
   constructor(config: IssuerConfig) {
+    // SOC-174 — no `?? '#key-1'`. See IssuerConfig.keyId for why a default is
+    // wrong for every DID method this SDK accepts.
+    if (!config.keyId) {
+      throw new Error('IssuerConfig.keyId is required — the key fragment cannot be guessed')
+    }
+    if (!config.keyId.startsWith('#')) {
+      throw new Error(`IssuerConfig.keyId must be a fragment starting with "#": ${config.keyId}`)
+    }
+
     this.config = {
       did: config.did,
       privateKey: typeof config.privateKey === 'string'
         ? new TextEncoder().encode(config.privateKey)
         : config.privateKey,
       algorithm: config.algorithm ?? 'Ed25519',
-      keyId: config.keyId ?? '#key-1',
+      keyId: config.keyId,
     }
+  }
+
+  /** The key fragment this issuer signs with, as configured. */
+  get keyId(): string {
+    return this.config.keyId
   }
 
   /**

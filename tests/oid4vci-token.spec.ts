@@ -143,7 +143,8 @@ describe('OID4VCI Token: Proof of Possession JWT', () => {
   it('builds a valid JWT structure', () => {
     const keys = generateKeyPair('Ed25519')
     const jwt = buildProofJwt({
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       issuerUrl: 'https://issuer.attestto.com',
       nonce: 'tZignsnFbp',
       privateKey: keys.privateKey,
@@ -155,7 +156,9 @@ describe('OID4VCI Token: Proof of Possession JWT', () => {
     const header = JSON.parse(new TextDecoder().decode(fromBase64url(parts[0])))
     expect(header.alg).toBe('EdDSA')
     expect(header.typ).toBe('openid4vci-proof+jwt')
-    expect(header.kid).toBe('did:web:holder.attestto.id#key-1')
+    // SOC-174: the fixture deliberately uses a fragment that is NOT `#key-1`,
+    // so a regression to the old default reddens here instead of passing.
+    expect(header.kid).toBe('did:web:holder.attestto.id#key-0')
 
     const payload = JSON.parse(new TextDecoder().decode(fromBase64url(parts[1])))
     expect(payload.iss).toBe('did:web:holder.attestto.id')
@@ -167,7 +170,8 @@ describe('OID4VCI Token: Proof of Possession JWT', () => {
   it('uses ES256 when specified', () => {
     const keys = generateKeyPair('ES256')
     const jwt = buildProofJwt({
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       issuerUrl: 'https://issuer.attestto.com',
       nonce: 'abc',
       privateKey: keys.privateKey,

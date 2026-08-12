@@ -47,8 +47,20 @@ export interface IssuerConfig {
   privateKey: Uint8Array | string
   /** Key algorithm (default: Ed25519) */
   algorithm?: 'Ed25519' | 'ES256'
-  /** Key ID fragment (default: #key-1) */
-  keyId?: string
+  /**
+   * Key ID fragment naming the key inside the DID Document — REQUIRED.
+   *
+   * SOC-174: this used to default to `#key-1`. The DID above is of
+   * UNSPECIFIED method, and `#key-1` is one method's convention rather than a
+   * universal fragment — `did:sns` §8.5 names its owner key `#solana-key`,
+   * `did:key` and `did:jwk` use `#0`, a `did:web` document names whatever it
+   * names. The default produced a well-formed credential naming a
+   * verification method the signer's own document does not contain, which a
+   * verifier can only report as an ordinary signature failure.
+   *
+   * Only the caller knows which key it signed with, so the caller states it.
+   */
+  keyId: string
 }
 
 /** Options for issuing a credential */

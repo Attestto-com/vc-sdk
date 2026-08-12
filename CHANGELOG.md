@@ -4,6 +4,24 @@ All notable changes to `@attestto/vc-sdk` will be documented in this file.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-08-11
+
+Security release. The verifier substituted `#key-1` when a proof's `verificationMethod` carried no key fragment, so a proof that named no key at all was checked against a key the **verifier** picked. If the subject's DID Document happened to contain a `#key-1`, an unbound proof verified against it. On the signing side, `keyId` defaulted to `#key-1` for a DID of any method, producing well-formed credentials and presentations that named a verification method the signer's own document does not contain. Both halves now refuse instead of guessing.
+
+### Security
+- **The verifier no longer chooses the key (SOC-174).** `checkProofs` previously read `hashIdx > 0 ? vm.substring(hashIdx) : '#key-1'`. A `verificationMethod` with no fragment now fails the `proof.verificationMethod` check and is rejected **before key resolution is attempted**, so the resolver is never asked for a key the proof did not name. Which key signed a credential is the proof's statement to make, not the verifier's to fill in.
+
+### Changed
+- **BREAKING (signer): `keyId` is now required** on `IssuerConfig`, `PresentationOptions` and `ProofOptions`, and must be a fragment starting with `#`. It previously defaulted to `#key-1`.
+  - `new VCIssuer({ did, privateKey })` now throws. Pass the fragment the key actually has: `new VCIssuer({ did, privateKey, keyId: '#solana-key' })`.
+  - `buildPresentation()` and `buildProofJwt()` throw for the same reason. `buildPresentation()` still reports zero credentials first, so that error is unchanged.
+  - `#key-1` is one DID method's convention, not a universal fragment. `did:sns` names its owner key `#solana-key` (method specification section 8.5), `did:key` and `did:jwk` use `#0`, and a `did:web` document names whatever it names. There is no method for which the old default was correct.
+
+### Notes
+- No downstream repo is affected on upgrade alone: `attestto-desktop` and `attestto-mobile` pin `@attestto/vc-sdk@0.2.0` and `attestto-app` ranges `^0.2.0`, none of which resolve to `0.4.0`. Each must pass `keyId` when it upgrades.
+- This release does not make the SDK read the fragment from a resolved DID Document. It removes the guess and requires the caller, which holds the key, to state its id. Reading `verificationMethod` out of a resolved document remains the consumer's job.
+- 164 tests pass. The 9 added in `tests/key-fragment.test.ts` cover both halves; the verifier case asserts that resolution is never **attempted** for a fragment-less proof, because asserting only `valid: false` would pass with the defect present (the fixture signature is invalid either way).
+
 ## [0.3.0] - 2026-07-19
 
 Security release. Verification was fail-open (an unsigned or unresolvable credential could report `valid: true`) and did not bind the signature to the credential issuer (a credential could claim a trusted `issuer` while being signed by an attacker's unrelated key). Both are now closed, fail-closed by default.

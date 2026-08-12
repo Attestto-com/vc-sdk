@@ -9,7 +9,8 @@ describe('Generic VC SDK', () => {
     it('issues a custom credential without plugins', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:university.example.com',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -34,7 +35,8 @@ describe('Generic VC SDK', () => {
     it('issues with multiple types', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:bank.attestto.id',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -55,7 +57,8 @@ describe('Generic VC SDK', () => {
     it('issues with no custom context', async () => {
       const issuer = new VCIssuer({
         did: 'did:key:z6Mktest',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -82,7 +85,8 @@ describe('Generic VC SDK', () => {
 
       const issuer = new VCIssuer({
         did: 'did:web:ucr.ac.cr',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
       issuer.use(educationPlugin)
 
@@ -112,7 +116,8 @@ describe('Generic VC SDK', () => {
 
       const issuer = new VCIssuer({
         did: 'did:web:hospital.example.com',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
       issuer.use(plugin)
 
@@ -133,7 +138,8 @@ describe('Generic VC SDK', () => {
     it('supports multiple plugins', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:multi-issuer.attestto.id',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       issuer
@@ -170,7 +176,8 @@ describe('Generic VC SDK', () => {
     it('verifies a generic credential', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:issuer.attestto.id',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -192,7 +199,8 @@ describe('Generic VC SDK', () => {
     it('verifies with expected context', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:issuer.attestto.id',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -213,7 +221,8 @@ describe('Generic VC SDK', () => {
     it('fails with wrong context', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:issuer.attestto.id',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -234,7 +243,8 @@ describe('Generic VC SDK', () => {
     it('detects tampered generic credential', async () => {
       const issuer = new VCIssuer({
         did: 'did:web:issuer.attestto.id',
-        privateKey: keys.privateKey,
+        keyId: '#key-0',
+      privateKey: keys.privateKey,
       })
 
       const vc = await issuer.issue({
@@ -260,7 +270,8 @@ describe('Generic VC SDK', () => {
       const es256Keys = generateKeyPair('ES256')
       const issuer = new VCIssuer({
         did: 'did:web:p256-issuer.attestto.id',
-        privateKey: es256Keys.privateKey,
+        keyId: '#key-0',
+      privateKey: es256Keys.privateKey,
         algorithm: 'ES256',
       })
 

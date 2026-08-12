@@ -15,12 +15,14 @@ describe('Chat Credential Schemas', () => {
 
   const issuerA = new VCIssuer({
     did: 'did:sns:alice.attestto.sol',
-    privateKey: keysA.privateKey,
+    keyId: '#key-0',
+      privateKey: keysA.privateKey,
   })
 
   const issuerB = new VCIssuer({
     did: 'did:sns:bob.attestto.sol',
-    privateKey: keysB.privateKey,
+    keyId: '#key-0',
+      privateKey: keysB.privateKey,
   })
 
   const resolver: PublicKeyResolver = async (did) => {
@@ -36,7 +38,8 @@ describe('Chat Credential Schemas', () => {
     it('issues a short-lived presence credential', async () => {
       const issuer = new VCIssuer({
         did: 'did:sns:alice.attestto.sol',
-        privateKey: keysA.privateKey,
+        keyId: '#key-0',
+      privateKey: keysA.privateKey,
       })
       issuer.use(presenceSchema)
 
@@ -63,7 +66,8 @@ describe('Chat Credential Schemas', () => {
     it('verifies a presence credential', async () => {
       const issuer = new VCIssuer({
         did: 'did:sns:alice.attestto.sol',
-        privateKey: keysA.privateKey,
+        keyId: '#key-0',
+      privateKey: keysA.privateKey,
       })
       issuer.use(presenceSchema)
 
@@ -88,7 +92,8 @@ describe('Chat Credential Schemas', () => {
     it('issues an agreement credential with multi-party signing', async () => {
       const issuerWithSchema = new VCIssuer({
         did: 'did:sns:alice.attestto.sol',
-        privateKey: keysA.privateKey,
+        keyId: '#key-0',
+      privateKey: keysA.privateKey,
       })
       issuerWithSchema.use(agreementSchema)
 
@@ -157,7 +162,8 @@ describe('Chat Credential Schemas', () => {
     it('includes referenced attachments', async () => {
       const issuer = new VCIssuer({
         did: 'did:sns:alice.attestto.sol',
-        privateKey: keysA.privateKey,
+        keyId: '#key-0',
+      privateKey: keysA.privateKey,
       })
       issuer.use(agreementSchema)
 
@@ -203,7 +209,8 @@ describe('Chat Credential Schemas', () => {
     it('handles both credential types', async () => {
       const issuer = new VCIssuer({
         did: 'did:sns:alice.attestto.sol',
-        privateKey: keysA.privateKey,
+        keyId: '#key-0',
+      privateKey: keysA.privateKey,
       })
       issuer.use(chatSchemas)
 
