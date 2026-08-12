@@ -97,8 +97,20 @@ export interface ProofOptions {
   privateKey: Uint8Array
   /** Key algorithm (default: Ed25519) */
   algorithm?: 'Ed25519' | 'ES256'
-  /** Key ID fragment (default: #key-1) */
-  keyId?: string
+  /**
+   * Key ID fragment naming the key inside the DID Document — REQUIRED.
+   *
+   * SOC-174: this used to default to `#key-1`. The DID above is of
+   * UNSPECIFIED method, and `#key-1` is one method's convention rather than a
+   * universal fragment — `did:sns` §8.5 names its owner key `#solana-key`,
+   * `did:key` and `did:jwk` use `#0`, a `did:web` document names whatever it
+   * names. The default produced a well-formed credential naming a
+   * verification method the signer's own document does not contain, which a
+   * verifier can only report as an ordinary signature failure.
+   *
+   * Only the caller knows which key it signed with, so the caller states it.
+   */
+  keyId: string
 }
 
 // ── Issuer Metadata ──────────────────────────────────────────────────────────
@@ -209,7 +221,13 @@ export function parseTokenResponse(
  * The proof binds the credential to the holder's key.
  */
 export function buildProofJwt(options: ProofOptions): string {
-  const { holderDid, issuerUrl, nonce, privateKey, algorithm = 'Ed25519', keyId = '#key-1' } = options
+  const { holderDid, issuerUrl, nonce, privateKey, algorithm = 'Ed25519', keyId } = options
+
+  // SOC-174 — the `kid` binds this proof to a key. Guessing it binds it to
+  // nothing the issuer can check.
+  if (!keyId || !keyId.startsWith('#')) {
+    throw new Error(`ProofOptions.keyId must be a fragment starting with "#": ${String(keyId)}`)
+  }
 
   const header = {
     alg: algorithm === 'Ed25519' ? 'EdDSA' : 'ES256',

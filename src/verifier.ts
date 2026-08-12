@@ -187,8 +187,30 @@ export class VCVerifier {
 
       const vm = proof.verificationMethod
       const hashIdx = vm.lastIndexOf('#')
-      const did = hashIdx > 0 ? vm.substring(0, hashIdx) : vm
-      const keyId = hashIdx > 0 ? vm.substring(hashIdx) : '#key-1'
+
+      // ── SOC-174 — the proof names its key, or it does not verify ─────────
+      //
+      // This used to read `hashIdx > 0 ? vm.substring(hashIdx) : '#key-1'`, so
+      // a proof whose `verificationMethod` carried no fragment was resolved
+      // against `#key-1` — a key the VERIFIER chose. If the subject's document
+      // happened to contain one, a proof that named no key at all verified
+      // against it.
+      //
+      // Which key signed a credential is the proof's statement to make. A
+      // verifier that supplies the missing half of an assertion and then checks
+      // the result is not checking the assertion; it is checking its own guess.
+      // So this refuses before resolution is even attempted.
+      if (hashIdx <= 0 || hashIdx === vm.length - 1) {
+        checks.push({ check: `${label}.verificationMethod`, passed: false })
+        errors.push(
+          `${label}.verificationMethod names no key fragment: ${vm} — a proof must name the key that signed it`,
+        )
+        allValid = false
+        continue
+      }
+
+      const did = vm.substring(0, hashIdx)
+      const keyId = vm.substring(hashIdx)
 
       // Issuer binding (SOC-32): is this proof's key the issuer's own, or one
       // the issuer explicitly authorizes?

@@ -20,7 +20,8 @@ function resolverFor(did: string, publicKey: Uint8Array): PublicKeyResolver {
 async function issueLegit() {
   const issuer = new VCIssuer({
     did: 'did:web:bank.attestto.id',
-    privateKey: issuerKeys.privateKey,
+    keyId: '#key-0',
+      privateKey: issuerKeys.privateKey,
   })
   return issuer.issue({
     type: 'BankKYC',
@@ -131,9 +132,11 @@ describe('SOC-32: signature must be bound to the issuer', () => {
   })
 
   it('multi-party: co-signer proof from another DID is allowed as long as the issuer also signed', async () => {
-    const issuerA = new VCIssuer({ did: 'did:web:bank.attestto.id', privateKey: issuerKeys.privateKey })
+    const issuerA = new VCIssuer({ did: 'did:web:bank.attestto.id', keyId: '#key-0',
+      privateKey: issuerKeys.privateKey })
     const coKeys = generateKeyPair()
-    const issuerB = new VCIssuer({ did: 'did:web:auditor.attestto.id', privateKey: coKeys.privateKey })
+    const issuerB = new VCIssuer({ did: 'did:web:auditor.attestto.id', keyId: '#key-0',
+      privateKey: coKeys.privateKey })
 
     const vc = await issuerA.issue({
       type: 'BankKYC',

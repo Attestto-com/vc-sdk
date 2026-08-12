@@ -203,7 +203,8 @@ describe('OID4VP Present: matchCredentials', () => {
 describe('OID4VP Present: buildPresentation', () => {
   it('builds a VP with proof', () => {
     const vp = buildPresentation([CEDULA_VC], {
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       privateKey: keys.privateKey,
       nonce: 'test-nonce',
     })
@@ -215,13 +216,16 @@ describe('OID4VP Present: buildPresentation', () => {
     expect(vp.proof).toBeDefined()
     expect(vp.proof!.type).toBe('Ed25519Signature2020')
     expect(vp.proof!.proofPurpose).toBe('authentication')
-    expect(vp.proof!.verificationMethod).toBe('did:web:holder.attestto.id#key-1')
+    // SOC-174: the fixture deliberately uses a fragment that is NOT `#key-1`,
+    // so a regression to the old default reddens here instead of passing.
+    expect(vp.proof!.verificationMethod).toBe('did:web:holder.attestto.id#key-0')
     expect(vp.proof!.proofValue).toBeTruthy()
   })
 
   it('wraps multiple credentials', () => {
     const vp = buildPresentation([CEDULA_VC, LICENSE_VC], {
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       privateKey: keys.privateKey,
       nonce: 'n',
     })
@@ -231,7 +235,8 @@ describe('OID4VP Present: buildPresentation', () => {
   it('throws for zero credentials', () => {
     expect(() =>
       buildPresentation([], {
-        holderDid: 'did:web:h.com',
+        keyId: '#key-0',
+    holderDid: 'did:web:h.com',
         privateKey: keys.privateKey,
         nonce: 'n',
       }),
@@ -240,7 +245,8 @@ describe('OID4VP Present: buildPresentation', () => {
 
   it('signature is verifiable', () => {
     const vp = buildPresentation([CEDULA_VC], {
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       privateKey: keys.privateKey,
       nonce: 'verify-me',
       domain: 'https://verifier.com',
@@ -262,7 +268,8 @@ describe('OID4VP Present: buildPresentation', () => {
 describe('OID4VP Present: buildDirectPostBody', () => {
   it('builds a body with vp_token and state', () => {
     const vp = buildPresentation([CEDULA_VC], {
-      holderDid: 'did:web:h.com',
+      keyId: '#key-0',
+    holderDid: 'did:web:h.com',
       privateKey: keys.privateKey,
       nonce: 'n',
     })
@@ -276,7 +283,8 @@ describe('OID4VP Present: buildDirectPostBody', () => {
 
   it('encodes as form-urlencoded', () => {
     const vp = buildPresentation([CEDULA_VC], {
-      holderDid: 'did:web:h.com',
+      keyId: '#key-0',
+    holderDid: 'did:web:h.com',
       privateKey: keys.privateKey,
       nonce: 'n',
     })
@@ -290,7 +298,8 @@ describe('OID4VP Present: buildDirectPostBody', () => {
 describe('OID4VP Present: preparePresentation (end-to-end)', () => {
   it('produces a VP + body from a satisfied request', () => {
     const result = preparePresentation(BASIC_VP_REQUEST, ALL_CREDS, {
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       privateKey: keys.privateKey,
     })
 
@@ -306,7 +315,8 @@ describe('OID4VP Present: preparePresentation (end-to-end)', () => {
       dcql_query: DCQL_IMPOSSIBLE,
     }
     const result = preparePresentation(request, ALL_CREDS, {
-      holderDid: 'did:web:h.com',
+      keyId: '#key-0',
+    holderDid: 'did:web:h.com',
       privateKey: keys.privateKey,
     })
     expect(result).toBeNull()
@@ -320,7 +330,8 @@ describe('OID4VP Present: preparePresentation (end-to-end)', () => {
     }
     expect(() =>
       preparePresentation(request, ALL_CREDS, {
-        holderDid: 'did:web:h.com',
+        keyId: '#key-0',
+    holderDid: 'did:web:h.com',
         privateKey: keys.privateKey,
       }),
     ).toThrow('no dcql_query')
@@ -328,7 +339,8 @@ describe('OID4VP Present: preparePresentation (end-to-end)', () => {
 
   it('binds nonce from request into VP proof', () => {
     const result = preparePresentation(BASIC_VP_REQUEST, ALL_CREDS, {
-      holderDid: 'did:web:holder.attestto.id',
+      keyId: '#key-0',
+    holderDid: 'did:web:holder.attestto.id',
       privateKey: keys.privateKey,
     })
 
