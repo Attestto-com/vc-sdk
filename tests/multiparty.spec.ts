@@ -25,7 +25,7 @@ describe('Multi-party VC signing', () => {
     keyId: '#key-1',
   })
 
-  const resolver: PublicKeyResolver = async (did, keyId) => {
+  const resolver: PublicKeyResolver = async (did, _keyId) => {
     const map: Record<string, Uint8Array> = {
       'did:sns:alice.attestto.sol': keysA.publicKey,
       'did:sns:bob.attestto.sol': keysB.publicKey,

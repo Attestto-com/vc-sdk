@@ -36,13 +36,18 @@ const SNS_VM = `${SNS_DID}#solana-key`
 const CREDENTIAL: VerifiableCredential = {
   '@context': ['https://www.w3.org/2018/credentials/v1'],
   'type': ['VerifiableCredential'],
+  'id': 'urn:uuid:5f0d1c9e-2b7a-4a1e-9a7e-2f1b3c4d5e6f',
   'issuer': SNS_DID,
   'issuanceDate': '2026-01-01T00:00:00Z',
   'credentialSubject': { id: 'did:key:zSubject' },
 }
 
 function header(jwt: string): Record<string, unknown> {
-  return JSON.parse(Buffer.from(jwt.split('.')[0], 'base64url').toString('utf-8'))
+  // `atob` rather than `Buffer`: this package targets the browser as well as
+  // node, and pulling @types/node in for a test helper would let node-only
+  // globals leak into specs for a library that must not use them.
+  const b64 = jwt.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')
+  return JSON.parse(atob(b64))
 }
 
 describe('signing — the key id is stated, never assumed', () => {
@@ -50,6 +55,9 @@ describe('signing — the key id is stated, never assumed', () => {
     // Previously defaulted to `#key-1`, so an issuer with a did:sns DID signed
     // every credential naming a method its own document does not contain.
     expect(
+      // @ts-expect-error — omitting keyId is the whole point: the type now
+      // forbids it and the constructor must refuse it at runtime too, for
+      // callers compiled from JavaScript or from a looser tsconfig.
       () => new VCIssuer({ did: SNS_DID, privateKey: KEY }),
     ).toThrow(/keyId/i)
   })

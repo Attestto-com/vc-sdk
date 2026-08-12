@@ -10,7 +10,6 @@ import {
   buildProofJwt,
   buildCredentialRequest,
   parseCredentialResponse,
-  TokenError,
   PRE_AUTHORIZED_CODE_GRANT,
   generateKeyPair,
   fromBase64url,

@@ -5,12 +5,15 @@ import {
   needsJarFetch,
   getRequestedCredentials,
   getRequestedClaims,
-  AuthorizationRequestError,
 } from '../src/oid4vp.js'
-import type { DcqlQuery, DcqlCredentialQuery } from '../src/oid4vp.js'
+import type { AuthorizationRequest, DcqlQuery, DcqlCredentialQuery } from '../src/oid4vp.js'
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
+// `satisfies`, not a bare literal: without it `response_mode` widens to
+// `string`, which is not a `ResponseMode`, and every call spreading this
+// fixture fails to type-check. Nothing noticed because tsconfig.json excluded
+// the tests, so no config had ever compiled this file.
 const BASIC_REQUEST = {
   response_type: 'vp_token',
   client_id: 'https://verifier.attestto.com',
@@ -18,7 +21,7 @@ const BASIC_REQUEST = {
   state: 'af0ifjsldkj',
   response_mode: 'direct_post',
   response_uri: 'https://verifier.attestto.com/response',
-}
+} satisfies AuthorizationRequest
 
 const DCQL_QUERY: DcqlQuery = {
   credentials: [
@@ -278,7 +281,10 @@ describe('OID4VP: helper functions', () => {
     expect(isDirectPost({ ...BASIC_REQUEST, response_type: 'vp_token' as const })).toBe(true)
     expect(isDirectPost({
       response_type: 'vp_token', client_id: 'x', nonce: 'y',
-      response_mode: 'fragment',
+      // `as const`: without it the literal widens to `string`, which is not a
+      // `ResponseMode`. The call compiled only because no config type-checked
+      // this file.
+      response_mode: 'fragment' as const,
     })).toBe(false)
     expect(isDirectPost({
       response_type: 'vp_token', client_id: 'x', nonce: 'y',

@@ -1,0 +1,23 @@
+{
+  // `tsconfig.json` sets `"exclude": ["node_modules", "dist", "tests"]` and
+  // `"rootDir": "./src"`, both correct for a published build: the tests are not
+  // part of the package. The side effect was that `tsc --noEmit` had never
+  // type-checked a single spec, so a type error inside one was invisible and
+  // the suite's own assumptions were never checked against the types they
+  // assert about. The first run of this config found seven, including a shared
+  // fixture whose `response_mode` had widened to `string`. The same gap was
+  // found in attestto-mesh and attestto-did-resolver in the same week.
+  //
+  // `exclude` must be overridden rather than inherited: an inherited
+  // `["tests"]` puts the specs straight back out of the project.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    // A spec may legitimately bind a value it only asserts on.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "exclude": [],
+  "include": ["src", "tests"]
+}
