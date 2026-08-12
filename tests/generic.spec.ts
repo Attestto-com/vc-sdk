@@ -281,7 +281,11 @@ describe('Generic VC SDK', () => {
         claims: { test: true },
       })
 
-      expect(vc.proof!.type).toBe('EcdsaSecp256r1Signature2019')
+      // `proof` is `Proof | Proof[]`: a credential may carry more than one.
+      // The unchecked `.type` happened to work only because this fixture has
+      // exactly one, and would have read `undefined` the moment it had two.
+      const proof = Array.isArray(vc.proof) ? vc.proof[0] : vc.proof!
+      expect(proof.type).toBe('EcdsaSecp256r1Signature2019')
 
       const verifier = new VCVerifier()
       const result = await verifier.verifyWithKey(vc, es256Keys.publicKey, 'ES256')

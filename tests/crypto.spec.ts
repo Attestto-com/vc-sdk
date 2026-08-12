@@ -75,11 +75,9 @@ describe('E2E Encryption Primitives', () => {
 
   describe('deriveChannelKey', () => {
     it('produces a 32-byte key', () => {
-      const secret = x25519SharedSecret(
-        generateX25519KeyPair().privateKey,
-        generateX25519KeyPair().publicKey
-      )
-      // Note: different keys won't produce matching secrets, but deriveChannelKey doesn't care
+      // The shared secret was computed here and then discarded: the call
+      // below passes a zero key instead, so the line proved nothing about
+      // x25519SharedSecret while reading as though it did.
       const key = deriveChannelKey(new Uint8Array(32), 'channel-1')
       expect(key.length).toBe(32)
     })

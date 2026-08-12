@@ -13,12 +13,6 @@ describe('Chat Credential Schemas', () => {
   const keysA = generateKeyPair('Ed25519')
   const keysB = generateKeyPair('Ed25519')
 
-  const issuerA = new VCIssuer({
-    did: 'did:sns:alice.attestto.sol',
-    keyId: '#key-0',
-      privateKey: keysA.privateKey,
-  })
-
   const issuerB = new VCIssuer({
     did: 'did:sns:bob.attestto.sol',
     keyId: '#key-0',
@@ -142,7 +136,12 @@ describe('Chat Credential Schemas', () => {
       const vc = await issuerWithSchema.issue({
         type: 'AgreementCredential',
         subjectDid: 'did:sns:alice.attestto.sol',
-        claims,
+        // An interface has no implicit index signature, so a typed
+        // AgreementSubject is not assignable to Record<string, unknown> even
+        // though every value in it is. This is the TypeScript rule, not a
+        // mismatch: `{ ...claims }` produces the same object with an
+        // inferrable shape.
+        claims: { ...claims },
       })
 
       expect(vc.type).toContain('AgreementCredential')
@@ -196,7 +195,12 @@ describe('Chat Credential Schemas', () => {
       const vc = await issuer.issue({
         type: 'AgreementCredential',
         subjectDid: 'did:sns:alice.attestto.sol',
-        claims,
+        // An interface has no implicit index signature, so a typed
+        // AgreementSubject is not assignable to Record<string, unknown> even
+        // though every value in it is. This is the TypeScript rule, not a
+        // mismatch: `{ ...claims }` produces the same object with an
+        // inferrable shape.
+        claims: { ...claims },
       })
 
       const agreement = vc.credentialSubject.agreement as AgreementSubject

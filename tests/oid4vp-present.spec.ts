@@ -5,7 +5,6 @@ import {
   buildDirectPostBody,
   encodeDirectPostBody,
   preparePresentation,
-  PresentationError,
   generateKeyPair,
   fromBase64url,
   verify,

@@ -1,10 +1,15 @@
 name: CI
 
+# Every branch and every pull request. A trigger that only covers the last hop
+# into main is not a gate: with `branches: [main, develop]` a PR based on
+# another feature branch ran NO JOB AT ALL, so every step below was skipped
+# rather than failed. That is the cheapest way to disable a whole pipeline
+# without touching a single step, which is why gate-self-test asserts it.
 on:
   push:
-    branches: [main, develop]
+    branches: ['**']
   pull_request:
-    branches: [main, develop]
+    branches: ['**']
 
 jobs:
   test:
@@ -21,6 +26,14 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # Runs before the gates it vouches for: it seeds a violation of each one
+      # and requires a non-zero exit. Every blocker in the 2026-08-11 audit was
+      # a control that existed and had never executed, so "the step is present"
+      # stopped counting as evidence. See scripts/gate-self-test.mjs.
+      - name: Gate self-test
+        run: pnpm run gate-self-test
+
       - name: Stub guard
         run: |
           if grep -rn \
@@ -34,11 +47,19 @@ jobs:
             echo "::error::Stub or placeholder found in src/"
             exit 1
           fi
-      # ESLint is not installed in this repo yet (lint script exists, no eslint
-      # dependency) — tracked as infra debt under SOC-60. Non-blocking so Test +
-      # Build gate PRs until it is configured.
+      # SOC-60 closed. This repo declared a `lint` script and never installed
+      # eslint, so the step could neither pass nor fail and CI ran it
+      # `continue-on-error: true` — a step that reports nothing under any
+      # outcome. eslint 9 + the flat config from cr-vc-sdk are now installed,
+      # the six real errors it found are fixed, and it blocks.
       - name: Lint
         run: pnpm run lint
-        continue-on-error: true
+      # Type-checks the tests, which tsconfig.json excludes. Without this pass
+      # a type error inside a spec is invisible; the first run of it found
+      # seven, including a shared fixture whose `response_mode` had widened to
+      # `string` so every call spreading it was uncheckable.
+      - name: Type-check (src + tests)
+        run: pnpm exec tsc --noEmit -p tsconfig.test.json
+
       - run: pnpm test
       - run: pnpm run build
